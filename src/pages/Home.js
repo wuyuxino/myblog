@@ -6,6 +6,8 @@ import MarkdownEditor from '@uiw/react-markdown-editor'
 import Images from '../images/index'
 import Outside from './component/Outside'
 
+const server_url = 'http://loveit.cool:10002/v1/graphql'
+
 export default class Home extends Component {
 	constructor(props) {
 		super(props)
@@ -24,7 +26,7 @@ export default class Home extends Component {
 	getMainNav = () => {
 		let $this = this
 		Get(
-			'http://loveit.cool:10002/v1/graphql',
+			server_url,
 			null,
 			{
 				table_name: 'main_nav',
@@ -35,7 +37,7 @@ export default class Home extends Component {
 			},
 			(e) => {
 				if (e.data.main_nav) {
-					this.getSecondaryNavList(e.data.main_nav[0].id)
+					$this.getSecondaryNavList(e.data.main_nav[0].id)
 					$this.setState({ main_nav: e.data.main_nav, nav_title: e.data.main_nav[0].name })
 				} else {
 					$this.setState({ main_nav: [] })
@@ -60,7 +62,7 @@ export default class Home extends Component {
 		let openNav = []
 		/* 查询当前第一个的所有文件 */
 		Get(
-			'http://loveit.cool:10002/v1/graphql',
+			server_url,
 			null,
 			{
 				table_name: 'secondary_nav',
@@ -86,7 +88,7 @@ export default class Home extends Component {
 						list: []
 					}
 					Get(
-						'http://loveit.cool:10002/v1/graphql',
+						server_url,
 						null,
 						{
 							table_name: 'article',
@@ -126,7 +128,7 @@ export default class Home extends Component {
 		if (id == null) { return }
 		let $this = this
 		Get(
-			'http://loveit.cool:10002/v1/graphql',
+			server_url,
 			null,
 			{
 				table_name: 'article',
@@ -139,12 +141,13 @@ export default class Home extends Component {
 			},
 			(e) => {
 				$this.setState({ currentArticle: e.data.article[0].content })
+				/* 检查文章中a标签 */
 				this.addTarget()
 			}
 		)
 	}
 
-	/* a标签添加target属性 跳转外部链接 */
+	/* 阻止页面内文章链接跳转到外部网页 */
 	addTarget = () => {
 		let all_a = document.getElementsByTagName('a')
 		for (let i = 0; i < all_a.length; i++) {
@@ -156,6 +159,7 @@ export default class Home extends Component {
 	}
 
 	componentDidMount() {
+		/* 获取默认菜单 */
 		this.getMainNav()
 		/* 页面尺寸变化 */
 		window.addEventListener('resize', () => {
@@ -182,11 +186,11 @@ export default class Home extends Component {
 					{/* 顶部标题 */}
 					<div
 						style={{
-							display: 'flex',
 							position: 'fixed',
 							top: 0,
 							width: '300px',
 							height: 50,
+							display: 'flex',
 							background: '#161823',
 							alignItems: 'center',
 							justifyContent: 'center'
@@ -218,6 +222,7 @@ export default class Home extends Component {
 					</div>
 					{/* 二级导航 */}
 					<div>
+						{/* 占位 */}
 						<div style={{ width: '300px', height: 50 }}></div>
 						{
 							currentMapNav.map((i, n) => {
@@ -236,12 +241,12 @@ export default class Home extends Component {
 												position: 'relative',
 												display: 'flex',
 												width: '100%',
-												color: '#000',
 												height: '45px',
 												fontSize: '14px',
-												letterSpacing: '2px',
-												background: '#fff',
 												fontWeight: '500',
+												color: '#000',
+												background: '#fff',
+												letterSpacing: '2px',
 												alignItems: 'center',
 												justifyContent: 'flex-start',
 												cursor: 'pointer',
@@ -276,12 +281,12 @@ export default class Home extends Component {
 														style={{
 															display: isopen_nav[n].isopen ? 'flex' : 'none',
 															width: '100%',
-															color: isopen_nav[n].list[ns] && n == current_nav ? 'yellow' : '#000',
 															height: '45px',
 															fontSize: '14px',
 															letterSpacing: '2px',
 															justifyContent: 'flex-start',
 															alignItems: 'center',
+															color: isopen_nav[n].list[ns] && n == current_nav ? 'yellow' : '#000',
 															background: isopen_nav[n].list[ns] && n == current_nav ? 'rgba(0,0,0,.6)' : '#fff',
 															cursor: 'pointer',
 															paddingLeft: '40px',
@@ -304,9 +309,9 @@ export default class Home extends Component {
 						position: 'absolute',
 						top: 0,
 						right: -30,
-						paddingRight: '30px',
 						width: window.innerWidth - 270,
 						height: window.innerHeight,
+						paddingRight: '30px',
 						background: '#f3f3f3',
 						overflowX: 'hidden'
 					}}>
