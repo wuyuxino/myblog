@@ -1,11 +1,10 @@
 import React, { Component } from 'react'
 import { Get } from 'webh5frame'
-import { Menu, Dropdown, Button } from "antd"
+import { Menu, Dropdown, Button, message } from "antd"
 import MarkdownEditor from '@uiw/react-markdown-editor'
 
 import Images from '../images/index'
 import Outside from './component/Outside'
-
 
 export default class Home extends Component {
 	constructor(props) {
@@ -140,8 +139,20 @@ export default class Home extends Component {
 			},
 			(e) => {
 				$this.setState({ currentArticle: e.data.article[0].content })
+				this.addTarget()
 			}
 		)
+	}
+
+	/* a标签添加target属性 跳转外部链接 */
+	addTarget = () => {
+		let all_a = document.getElementsByTagName('a')
+		for (let i = 0; i < all_a.length; i++) {
+			all_a[i].onclick = () => {
+				message.info('请复制链接在浏览器打开', .5)
+			}
+			all_a[i].setAttribute('href', 'javascript:void(0);')
+		}
 	}
 
 	componentDidMount() {
