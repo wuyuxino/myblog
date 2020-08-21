@@ -49,7 +49,12 @@ export default class Home extends Component {
 	getSecondaryNavList = (main_nav_id) => {
 		let $this = this
 		/* 初始化数据 */
-		this.setState({ currentMapNav: [], currentArticle: '### 该分类下暂无文章内容！' })
+		this.setState({
+			currentMapNav: [],
+			currentArticle: '### 该分类下暂无文章内容！',
+			current_nav: 0,
+			current_nav_list: [0, 0]
+		})
 		/* 设置大的导航map结构 */
 		let MainNav = []
 		let openNav = []
@@ -157,7 +162,7 @@ export default class Home extends Component {
 						top: 0,
 						width: '320px',
 						height: window.innerHeight,
-						background: '#eef7f2',
+						background: '#fffef8',
 						overflowY: 'scroll',
 						overflowX: 'hidden'
 					}}>
@@ -222,12 +227,13 @@ export default class Home extends Component {
 												height: '45px',
 												fontSize: '14px',
 												letterSpacing: '2px',
-												background: '#f9d367',
+												background: '#fff',
 												fontWeight: '500',
 												alignItems: 'center',
 												justifyContent: 'flex-start',
 												cursor: 'pointer',
-												paddingLeft: '20px'
+												paddingLeft: '20px',
+												borderBottom: '1px solid #f2f2f2'
 											}}
 											key={n}>
 											{i.nav}
@@ -257,16 +263,16 @@ export default class Home extends Component {
 														style={{
 															display: isopen_nav[n].isopen ? 'flex' : 'none',
 															width: '100%',
-															color: isopen_nav[n].list[ns] && n == current_nav ? 'red' : '#000',
+															color: isopen_nav[n].list[ns] && n == current_nav ? 'yellow' : '#000',
 															height: '45px',
 															fontSize: '14px',
 															letterSpacing: '2px',
 															justifyContent: 'flex-start',
 															alignItems: 'center',
-															background: '#fbf2e3',
+															background: isopen_nav[n].list[ns] && n == current_nav ? 'rgba(0,0,0,.6)' : '#fff',
 															cursor: 'pointer',
 															paddingLeft: '40px',
-															borderBottom: '1px solid #fff'
+															borderBottom: '1px solid #f2f2f2'
 														}}>
 														{is.name}
 													</div>
@@ -284,10 +290,12 @@ export default class Home extends Component {
 					style={{
 						position: 'absolute',
 						top: 0,
-						right: 0,
-						width: window.innerWidth - 300,
+						right: -30,
+						paddingRight: '30px',
+						width: window.innerWidth - 270,
 						height: window.innerHeight,
-						background: '#f3f3f3'
+						background: '#f3f3f3',
+						overflowX: 'hidden'
 					}}>
 					<MarkdownEditor
 						options={{
