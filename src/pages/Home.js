@@ -53,7 +53,8 @@ export default class Home extends Component {
 			currentMapNav: [],
 			currentArticle: '### 该分类下暂无文章内容！',
 			current_nav: 0,
-			current_nav_list: [0, 0]
+			current_nav_list: [0, 0],
+			isopen_nav: []
 		})
 		/* 设置大的导航map结构 */
 		let MainNav = []
@@ -71,7 +72,10 @@ export default class Home extends Component {
 				}`
 			},
 			(e) => {
-				let isSet = false
+				let isSet = []
+				for (let j = 0; j < e.data.secondary_nav.length; j++) {
+					isSet.push(false)
+				}
 				for (let i = 0; i < e.data.secondary_nav.length; i++) {
 					let obj = {
 						nav: e.data.secondary_nav[i].name,
@@ -97,23 +101,20 @@ export default class Home extends Component {
 							obj.list = es.data.article
 							MainNav.push(obj)
 							for (let is = 0; is < es.data.article.length; is++) {
-								if (i == 0 && is == 0) {
-									obj_open.list.push(true)
-								} else {
-									obj_open.list.push(false)
-								}
+								obj_open.list.push(false)
 							}
 							openNav.push(obj_open)
-							if (i == e.data.secondary_nav.length - 1) {
-								isSet = true
-							}
+							isSet[i] = true
 						}
 					)
 				}
 				$this.timer = setInterval(() => {
-					if (isSet) {
+					if (isSet.includes(false) !== true) {
+						if (openNav.length !== 0) { openNav[0].list[0] = true }
 						$this.setState({ isopen_nav: openNav, currentMapNav: MainNav })
-						$this.getArticleContent(MainNav[0].list[0].id)
+						if (openNav.length !== 0) {
+							$this.getArticleContent(MainNav[0].list[0] ? MainNav[0].list[0].id : null)
+						}
 						clearInterval($this.timer)
 					}
 				}, 200)
@@ -123,6 +124,7 @@ export default class Home extends Component {
 
 	/* 点击查询指定文章内容 */
 	getArticleContent = (id) => {
+		if (id == null) { return }
 		let $this = this
 		Get(
 			'http://loveit.cool:10002/v1/graphql',
