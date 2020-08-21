@@ -11,3 +11,19 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ant-btn{
+	background: #161823 !important;
+  color: #fff !important;
+	border: 0px !important;
+	width: 100% !important;
+	height: 100% !important;
+}
+
+/* md style */
+.md-editor-visible{
+	width: 100% !important;
+}
+.cm-s-default{
+	width: 0% !important;
+}
