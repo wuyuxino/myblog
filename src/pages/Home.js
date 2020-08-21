@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
+import { Get } from 'webh5frame'
 import { Menu, Dropdown, Button } from "antd"
 import MarkdownEditor from '@uiw/react-markdown-editor'
+
+import Images from '../images/index'
 import Outside from './component/Outside'
-import { Get } from 'webh5frame'
+
 
 export default class Home extends Component {
 	constructor(props) {
@@ -11,7 +14,10 @@ export default class Home extends Component {
 			main_nav: [],
 			nav_title: '',
 			currentMapNav: [],
-			currentArticle: ''
+			currentArticle: '',
+			isopen_nav: [],
+			current_nav: 0,
+			current_nav_list: [0, 0]
 		}
 	}
 
@@ -19,7 +25,7 @@ export default class Home extends Component {
 	getMainNav = () => {
 		let $this = this
 		Get(
-			'http://106.13.63.7:10002/v1/graphql',
+			'http://loveit.cool:10002/v1/graphql',
 			null,
 			{
 				table_name: 'main_nav',
@@ -43,12 +49,13 @@ export default class Home extends Component {
 	getSecondaryNavList = (main_nav_id) => {
 		let $this = this
 		/* 初始化数据 */
-		this.setState({ currentMapNav: [], currentArticle: '# 暂无文章' })
+		this.setState({ currentMapNav: [], currentArticle: '### 该分类下暂无文章内容！' })
 		/* 设置大的导航map结构 */
 		let MainNav = []
+		let openNav = []
 		/* 查询当前第一个的所有文件 */
 		Get(
-			'http://106.13.63.7:10002/v1/graphql',
+			'http://loveit.cool:10002/v1/graphql',
 			null,
 			{
 				table_name: 'secondary_nav',
@@ -63,10 +70,15 @@ export default class Home extends Component {
 				for (let i = 0; i < e.data.secondary_nav.length; i++) {
 					let obj = {
 						nav: e.data.secondary_nav[i].name,
+						list: [],
+						isopen: true
+					}
+					let obj_open = {
+						isopen: true,
 						list: []
 					}
 					Get(
-						'http://106.13.63.7:10002/v1/graphql',
+						'http://loveit.cool:10002/v1/graphql',
 						null,
 						{
 							table_name: 'article',
@@ -79,6 +91,14 @@ export default class Home extends Component {
 						(es) => {
 							obj.list = es.data.article
 							MainNav.push(obj)
+							for (let is = 0; is < es.data.article.length; is++) {
+								if (i == 0 && is == 0) {
+									obj_open.list.push(true)
+								} else {
+									obj_open.list.push(false)
+								}
+							}
+							openNav.push(obj_open)
 							if (i == e.data.secondary_nav.length - 1) {
 								isSet = true
 							}
@@ -87,7 +107,7 @@ export default class Home extends Component {
 				}
 				$this.timer = setInterval(() => {
 					if (isSet) {
-						$this.setState({ currentMapNav: MainNav })
+						$this.setState({ isopen_nav: openNav, currentMapNav: MainNav })
 						$this.getArticleContent(MainNav[0].list[0].id)
 						clearInterval($this.timer)
 					}
@@ -100,7 +120,7 @@ export default class Home extends Component {
 	getArticleContent = (id) => {
 		let $this = this
 		Get(
-			'http://106.13.63.7:10002/v1/graphql',
+			'http://loveit.cool:10002/v1/graphql',
 			null,
 			{
 				table_name: 'article',
@@ -126,7 +146,7 @@ export default class Home extends Component {
 	}
 
 	render() {
-		const { main_nav, nav_title, currentMapNav, currentArticle } = this.state
+		const { main_nav, nav_title, currentMapNav, currentArticle, isopen_nav, current_nav, current_nav_list } = this.state
 		return (
 			<Outside>
 				{/* 左侧导航 */}
@@ -137,7 +157,7 @@ export default class Home extends Component {
 						top: 0,
 						width: '320px',
 						height: window.innerHeight,
-						background: '#f2f2f2',
+						background: '#eef7f2',
 						overflowY: 'scroll',
 						overflowX: 'hidden'
 					}}>
@@ -179,44 +199,74 @@ export default class Home extends Component {
 						</Dropdown>
 					</div>
 					{/* 二级导航 */}
-					<div
-						style={{
-							width: '300px',
-							height: 2000,
-							background: '#c4d7d6'
-						}}>
+					<div>
 						<div style={{ width: '300px', height: 50 }}></div>
 						{
 							currentMapNav.map((i, n) => {
 								return (
 									<div>
 										<div
+											onClick={() => {
+												if (isopen_nav[n].isopen) {
+													isopen_nav[n].isopen = false
+												} else {
+													isopen_nav[n].isopen = true
+												}
+												this.setState({ isopen_nav })
+											}}
 											style={{
+												position: 'relative',
 												display: 'flex',
 												width: '100%',
+												color: '#000',
 												height: '45px',
-												background: 'red',
+												fontSize: '14px',
+												letterSpacing: '2px',
+												background: '#f9d367',
+												fontWeight: '500',
 												alignItems: 'center',
-												justifyContent: 'center'
+												justifyContent: 'flex-start',
+												cursor: 'pointer',
+												paddingLeft: '20px'
 											}}
 											key={n}>
 											{i.nav}
+											<img
+												style={{
+													position: 'absolute',
+													right: 30
+												}}
+												src={isopen_nav[n].isopen ? Images.up : Images.down}
+												width={20}
+												height={20} />
 										</div>
 										{
 											i.list.map((is, ns) => {
 												return (
 													<div
 														onClick={() => {
+															if (current_nav_list[0] === n && current_nav_list[1] === ns) { return }
 															this.getArticleContent(is.id)
+															isopen_nav[current_nav_list[0]].list[current_nav_list[1]] = false
+															isopen_nav[n].list[ns] = true
+															this.setState({ current_nav: n }, () => {
+																this.setState({ isopen_nav, current_nav_list: [n, ns] })
+															})
 														}}
 														key={ns}
 														style={{
-															display: 'flex',
+															display: isopen_nav[n].isopen ? 'flex' : 'none',
 															width: '100%',
+															color: isopen_nav[n].list[ns] && n == current_nav ? 'red' : '#000',
 															height: '45px',
-															justifyContent: 'center',
+															fontSize: '14px',
+															letterSpacing: '2px',
+															justifyContent: 'flex-start',
 															alignItems: 'center',
-															background: 'yellow'
+															background: '#fbf2e3',
+															cursor: 'pointer',
+															paddingLeft: '40px',
+															borderBottom: '1px solid #fff'
 														}}>
 														{is.name}
 													</div>
@@ -251,7 +301,7 @@ export default class Home extends Component {
 						toolbarsMode={false}
 					/>
 				</div>
-			</Outside>
-		);
+			</Outside >
+		)
 	}
 }
